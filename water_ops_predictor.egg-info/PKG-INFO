@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: water-ops-predictor
+Version: 0.1.0
+Summary: Predictor for water instability events using pump, nozzle, and hydrant telemetry.
+Author: Ankit Tyagi
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: xgboost
+Requires-Dist: scikit-learn
+Requires-Dist: pydantic
+Requires-Dist: pyarrow>=23.0.0

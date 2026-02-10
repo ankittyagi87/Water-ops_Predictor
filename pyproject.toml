@@ -1,0 +1,30 @@
+[project]
+name = "water-ops-predictor"
+version = "0.1.0"
+description = "Predictor for water instability events using pump, nozzle, and hydrant telemetry."
+authors = [{ name = "Ankit Tyagi" }]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "pandas",
+    "numpy",
+    "fastapi",
+    "uvicorn",
+    "xgboost",
+    "scikit-learn",
+    "pydantic",
+    "pyarrow>=23.0.0",
+]
+
+[tool.uv]
+# New format for dev dependencies
+[dependency-groups]
+dev = ["pytest", "black", "mypy"]
+
+[tool.setuptools]
+packages = ["waterops"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

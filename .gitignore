@@ -1,0 +1,10 @@
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore Data files
+data_raw/
+data_curated/
+artifacts/
+*.pdf
+*.txt
