@@ -1,0 +1,135 @@
+[11-Feb-2026 05:39:41] [INFO] training_pipeline :: WATER SUPPLY RISK PREDICTION - TRAINING PIPELINE
+[11-Feb-2026 05:39:41] [INFO] training_pipeline :: Loading data from Parquet files...
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Validating telemetry data quality...
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Numeric Telemetry: {'total_rows': 54636, 'duplicates': np.int64(573), 'missing_timestamps': np.int64(0), 'missing_values': np.int64(0), 'incidents': 10, 'time_range_ms': np.int64(472720)}
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Categorical Telemetry: {'total_rows': 20723, 'duplicates': np.int64(218), 'incidents': 10}
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Labels: {'total_labels': 4101, 'duplicates': np.int64(0), 'positive_rate': np.float64(0.3009022189709827), 'incidents': 10}
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Deduplicating...
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Creating wide telemetry format...
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Numeric wide: 13097 rows with 51 columns
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Categorical wide: 12280 rows with 13 columns
+[11-Feb-2026 05:39:42] [INFO] training_pipeline :: Generating features from telemetry windows...
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Merging features with labels...
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Dataset shape: (4099, 399)
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Positive rate: 0.3010
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Validating no temporal leakage...
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Temporal leakage validation passed (sampled check)
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Features use only historical data from [T-60s, T)
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Labels describe risk in future window [T, T+120s]
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Final dataset: 4099 samples
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Incidents: 10
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Positive samples: 1234 (30.10%)
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Train: 2922 samples from 7 incidents
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Test:  1177 samples from 3 incidents
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Train positive rate: 32.17%
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Test positive rate:  24.98%
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Feature count: 396
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: Categorical features: 13
+[11-Feb-2026 05:40:20] [INFO] training_pipeline :: BASELINE MODEL (Standard XGBoost)
+[11-Feb-2026 05:40:21] [INFO] training_pipeline :: 
+Baseline Metrics (threshold=0.5):
+[11-Feb-2026 05:40:21] [INFO] training_pipeline :: IMPROVED MODEL (Recall-Optimized Sentinel)
+[11-Feb-2026 05:40:21] [INFO] training_pipeline :: Class imbalance ratio: 2.11
+[11-Feb-2026 05:40:21] [INFO] training_pipeline :: Selected threshold: 0.0002 (target recall >= 0.75)
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: Sentinel Metrics:
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: THRESHOLD TRADEOFF ANALYSIS
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: Exploring precision/recall tradeoffs at different thresholds:
+
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::  Threshold  Precision     Recall         F1     FP     FN
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.01      0.398      1.000      0.569    445      0
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.05      0.374      0.537      0.441    264    136
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.10      0.394      0.456      0.423    206    160
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.30      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.50      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.70      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:40:22] [INFO] training_pipeline ::       0.90      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: Tradeoff explanation:
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - Lower threshold → Higher recall (fewer missed risks) but more false alarms
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - Higher threshold → Higher precision (fewer false alarms) but more missed risks
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - For safety-critical applications, we prioritize recall >= 0.75
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - This means accepting 883 false positives to catch 294/294 risks
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: TOP 15 MOST IMPORTANT FEATURES
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: SAVING MODEL ARTIFACTS
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: Training complete!
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: Artifacts saved to: ./artifacts
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - baseline.xgb
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - sentinel.xgb (recommended)
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - metadata.json
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - feature_names.json
+[11-Feb-2026 05:40:22] [INFO] training_pipeline :: - label_encoders.json (13 categorical features)
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: WATER SUPPLY RISK PREDICTION - TRAINING PIPELINE
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Loading data from Parquet files...
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Validating telemetry data quality...
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Numeric Telemetry: {'total_rows': 54636, 'duplicates': np.int64(573), 'missing_timestamps': np.int64(0), 'missing_values': np.int64(0), 'incidents': 10, 'time_range_ms': np.int64(472720)}
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Categorical Telemetry: {'total_rows': 20723, 'duplicates': np.int64(218), 'incidents': 10}
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Labels: {'total_labels': 4101, 'duplicates': np.int64(0), 'positive_rate': np.float64(0.3009022189709827), 'incidents': 10}
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Deduplicating...
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Creating wide telemetry format...
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Numeric wide: 13097 rows with 51 columns
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Categorical wide: 12280 rows with 13 columns
+[11-Feb-2026 05:42:50] [INFO] training_pipeline :: Generating features from telemetry windows...
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Merging features with labels...
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Dataset shape: (4099, 399)
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Positive rate: 0.3010
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Validating no temporal leakage...
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Temporal leakage validation passed (sampled check)
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Features use only historical data from [T-60s, T)
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Labels describe risk in future window [T, T+120s]
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Final dataset: 4099 samples
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Incidents: 10
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Positive samples: 1234 (30.10%)
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Train: 2922 samples from 7 incidents
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Test:  1177 samples from 3 incidents
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Train positive rate: 32.17%
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Test positive rate:  24.98%
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Feature count: 396
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: Categorical features: 13
+[11-Feb-2026 05:43:29] [INFO] training_pipeline :: BASELINE MODEL (Standard XGBoost)
+[11-Feb-2026 05:43:30] [INFO] training_pipeline :: 
+Baseline Metrics (threshold=0.5):
+[11-Feb-2026 05:43:30] [INFO] training_pipeline :: IMPROVED MODEL (Recall-Optimized Sentinel)
+[11-Feb-2026 05:43:30] [INFO] training_pipeline :: Class imbalance ratio: 2.11
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Selected threshold: 0.0002 (target recall >= 0.75)
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Sentinel Metrics:
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: THRESHOLD TRADEOFF ANALYSIS
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Exploring precision/recall tradeoffs at different thresholds:
+
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::  Threshold  Precision     Recall         F1     FP     FN
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.01      0.398      1.000      0.569    445      0
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.05      0.374      0.537      0.441    264    136
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.10      0.394      0.456      0.423    206    160
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.30      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.50      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.70      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:43:31] [INFO] training_pipeline ::       0.90      0.000      0.000      0.000      0    294
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Tradeoff explanation:
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - Lower threshold → Higher recall (fewer missed risks) but more false alarms
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - Higher threshold → Higher precision (fewer false alarms) but more missed risks
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - For safety-critical applications, we prioritize recall >= 0.75
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - This means accepting 883 false positives to catch 294/294 risks
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: TOP 15 MOST IMPORTANT FEATURES
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: 
+                                      feature  importance
+                 nozzle.flow_gpm_nozzle_2_max    0.255212
+hydrant.residual_pressure_psi_hydrant_43_mean    0.154239
+                 nozzle.flow_gpm_nozzle_2_min    0.077521
+       pump.discharge_pressure_psi_pump_1_min    0.049612
+                   pump.engine_rpm_pump_1_max    0.035599
+  hydrant.residual_pressure_psi_hydrant_2_min    0.031429
+           nozzle.pressure_psi_nozzle_1_count    0.029323
+                nozzle.flow_gpm_nozzle_2_mean    0.026872
+               pump.tank_level_gal_pump_4_min    0.023612
+                 pump.throttle_pct_pump_3_min    0.020862
+              pump.tank_level_gal_pump_4_last    0.019229
+                 pump.engine_rpm_pump_4_count    0.017562
+                pump.throttle_pct_pump_1_mean    0.017004
+               pump.tank_level_gal_pump_3_min    0.015924
+                   pump.engine_rpm_pump_1_min    0.013324
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: SAVING MODEL ARTIFACTS
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Training complete!
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: Artifacts saved to: ./artifacts
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - baseline.xgb
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - sentinel.xgb (recommended)
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - metadata.json
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - feature_names.json
+[11-Feb-2026 05:43:31] [INFO] training_pipeline :: - label_encoders.json (13 categorical features)

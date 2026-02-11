@@ -7,6 +7,8 @@ from typing import Dict, List, Optional, Literal
 
 import numpy as np
 import pandas as pd
+import logging
+import sys
 
 from xgboost import XGBClassifier
 
@@ -15,6 +17,44 @@ from sklearn.metrics import (
     f1_score, roc_auc_score, average_precision_score,
     precision_recall_curve, confusion_matrix
 )
+
+# ============================================================
+# Logging Setup
+# ============================================================
+
+def setup_logger(level: str = "INFO", log_dir: str = "logs") -> logging.Logger:
+    os.makedirs(log_dir, exist_ok=True)
+
+    logger = logging.getLogger("training_pipeline")
+    logger.setLevel(getattr(logging, level.upper(), logging.INFO))
+
+    formatter = logging.Formatter(
+        "[%(asctime)s] [%(levelname)s] %(name)s :: %(message)s",
+        datefmt="%d-%b-%Y %H:%M:%S"
+    )
+
+    # Console
+    console = logging.StreamHandler(sys.stdout)
+    console.setFormatter(formatter)
+
+    # File
+    file_handler = logging.FileHandler(
+        os.path.join(log_dir, "training.log"),
+        mode="a",
+        encoding="utf-8"
+    )
+    file_handler.setFormatter(formatter)
+
+    if not logger.handlers:
+        logger.addHandler(console)
+        logger.addHandler(file_handler)
+
+    logger.propagate = False
+    return logger
+
+
+
+logger = setup_logger()
 
 # CONFIG
 @dataclass(frozen=True)
@@ -276,13 +316,13 @@ class TrainingTableBuilder:
         self.feature_generator = FeatureGenerator(cfg)
         
     def build(self) -> pd.DataFrame:
-        print("Loading data from Parquet files...")
+        logger.info("Loading data from Parquet files...")
         labels = pd.read_parquet(os.path.join(self.data_dir, "labels.parquet"))
         telemetry_numeric = pd.read_parquet(os.path.join(self.data_dir, "telemetry_long.parquet"))
         telemetry_categorical = pd.read_parquet(os.path.join(self.data_dir, "telemetry_categorical.parquet"))
         
         # ---- Validate data quality
-        print("Validating telemetry data quality...")
+        logger.info("Validating telemetry data quality...")
         num_issues = self.validator.validate_telemetry(telemetry_numeric)
         cat_issues = {
             "total_rows": len(telemetry_categorical),
@@ -291,26 +331,26 @@ class TrainingTableBuilder:
         }
         label_issues = self.validator.validate_labels(labels)
         
-        print(f"Numeric Telemetry: {num_issues}")
-        print(f"Categorical Telemetry: {cat_issues}")
-        print(f"Labels: {label_issues}")
+        logger.info(f"Numeric Telemetry: {num_issues}")
+        logger.info(f"Categorical Telemetry: {cat_issues}")
+        logger.info(f"Labels: {label_issues}")
         
         # ---- Preprocess telemetry
-        print("Deduplicating...")
+        logger.info("Deduplicating...")
         telemetry_numeric = self.preprocessor.deduplicate_telemetry(telemetry_numeric)
         telemetry_categorical = self.preprocessor.deduplicate_categorical(telemetry_categorical)
         labels = self.preprocessor.deduplicate_labels(labels)
         
         # ---- Create wide telemetry
-        print("Creating wide telemetry format...")
+        logger.info("Creating wide telemetry format...")
         telemetry_wide_numeric = self.preprocessor.create_wide_telemetry(telemetry_numeric)
         telemetry_wide_categorical = self.preprocessor.create_wide_categorical(telemetry_categorical)
         
-        print(f"Numeric wide: {len(telemetry_wide_numeric)} rows with {len(telemetry_wide_numeric.columns)-2} columns")
-        print(f"Categorical wide: {len(telemetry_wide_categorical)} rows with {len(telemetry_wide_categorical.columns)-2} columns")
+        logger.info(f"Numeric wide: {len(telemetry_wide_numeric)} rows with {len(telemetry_wide_numeric.columns)-2} columns")
+        logger.info(f"Categorical wide: {len(telemetry_wide_categorical)} rows with {len(telemetry_wide_categorical.columns)-2} columns")
         
         # ---- Generate features
-        print("Generating features from telemetry windows...")
+        logger.info("Generating features from telemetry windows...")
         features = self.feature_generator.build_all_features(
             telemetry_wide_numeric, 
             telemetry_wide_categorical, labels
@@ -320,7 +360,7 @@ class TrainingTableBuilder:
             raise ValueError("No features generated. Check your data.")
         
         # ---- Merge with labels
-        print("Merging features with labels...")
+        logger.info("Merging features with labels...")
         dataset = features.merge(
             labels, 
             on=["incident_id", "ts_ms"], 
@@ -330,8 +370,8 @@ class TrainingTableBuilder:
         if self.cfg.label_col not in dataset.columns:
             raise ValueError(f"Label column '{self.cfg.label_col}' not found. Available: {dataset.columns.tolist()}")
         
-        print(f"Dataset shape: {dataset.shape}")
-        print(f"Positive rate: {dataset[self.cfg.label_col].mean():.4f}")
+        logger.info(f"Dataset shape: {dataset.shape}")
+        logger.info(f"Positive rate: {dataset[self.cfg.label_col].mean():.4f}")
         
         # Validate no leakage
         self._validate_no_leakage(dataset, telemetry_wide_numeric)
@@ -340,7 +380,7 @@ class TrainingTableBuilder:
         
     def _validate_no_leakage(self, dataset: pd.DataFrame, telemetry_wide_numeric: pd.DataFrame):
         
-        print("Validating no temporal leakage...")
+        logger.info("Validating no temporal leakage...")
         
         # Sample a few rows and verify
         sample_size = min(100, len(dataset))
@@ -364,9 +404,9 @@ class TrainingTableBuilder:
             # This is a basic sanity check - in our feature engineering,
             # we explicitly filter to [T-60s, T) so this should always pass
             
-        print("Temporal leakage validation passed (sampled check)")
-        print("Features use only historical data from [T-60s, T)")
-        print("Labels describe risk in future window [T, T+120s]")
+        logger.info("Temporal leakage validation passed (sampled check)")
+        logger.info("Features use only historical data from [T-60s, T)")
+        logger.info("Labels describe risk in future window [T, T+120s]")
   
 # Metrics
 
@@ -403,7 +443,7 @@ def find_recall_threshold(
 ) -> float:
     """Find threshold that achieves minimum recall"""
     if len(np.unique(y_true)) < 2:
-        print(f"Only one class present, using fallback threshold {fallback}")
+        logger.info(f"Only one class present, using fallback threshold {fallback}")
         return fallback
 
     precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
@@ -413,7 +453,7 @@ def find_recall_threshold(
     valid_indices = np.where(recall >= min_recall)[0]
     
     if len(valid_indices) == 0:
-        print(f"Cannot achieve recall >= {min_recall}, using fallback {fallback}")
+        logger.info(f"Cannot achieve recall >= {min_recall}, using fallback {fallback}")
         return fallback
     
     # Get the threshold corresponding to the first valid recall
@@ -436,15 +476,15 @@ def main():
     cfg = Config()
     os.makedirs(args.model_out, exist_ok=True)
     
-    print("WATER SUPPLY RISK PREDICTION - TRAINING PIPELINE")
+    logger.info("WATER SUPPLY RISK PREDICTION - TRAINING PIPELINE")
     
     # Build training table
     builder = TrainingTableBuilder(data_dir=args.data, cfg=cfg)
     df = builder.build()
     
-    print(f"Final dataset: {len(df)} samples")
-    print(f"Incidents: {df['incident_id'].nunique()}")
-    print(f"Positive samples: {df[cfg.label_col].sum()} ({df[cfg.label_col].mean():.2%})")
+    logger.info(f"Final dataset: {len(df)} samples")
+    logger.info(f"Incidents: {df['incident_id'].nunique()}")
+    logger.info(f"Positive samples: {df[cfg.label_col].sum()} ({df[cfg.label_col].mean():.2%})")
     
     # Train Test Split (Incident-level)
     incident_ids = df[cfg.incident_col].unique()
@@ -458,10 +498,10 @@ def main():
     train = df[df[cfg.incident_col].isin(train_ids)].copy()
     test = df[df[cfg.incident_col].isin(test_ids)].copy()
     
-    print(f"Train: {len(train)} samples from {len(train_ids)} incidents")
-    print(f"Test:  {len(test)} samples from {len(test_ids)} incidents")
-    print(f"Train positive rate: {train[cfg.label_col].mean():.2%}")
-    print(f"Test positive rate:  {test[cfg.label_col].mean():.2%}")
+    logger.info(f"Train: {len(train)} samples from {len(train_ids)} incidents")
+    logger.info(f"Test:  {len(test)} samples from {len(test_ids)} incidents")
+    logger.info(f"Train positive rate: {train[cfg.label_col].mean():.2%}")
+    logger.info(f"Test positive rate:  {test[cfg.label_col].mean():.2%}")
     
     # Prepare features and labels
     feature_cols = [
@@ -474,8 +514,8 @@ def main():
         if col.endswith('_last') and df[col].dtype == 'object'
     ]
     
-    print(f"Feature count: {len(feature_cols)}")
-    print(f"Categorical features: {len(categorical_feature_cols)}")
+    logger.info(f"Feature count: {len(feature_cols)}")
+    logger.info(f"Categorical features: {len(categorical_feature_cols)}")
     if categorical_feature_cols:
         print(f"Examples: {categorical_feature_cols[:5]}")
         
@@ -515,7 +555,7 @@ def main():
     
     # BASELINE MODEL
    
-    print("BASELINE MODEL (Standard XGBoost)")
+    logger.info("BASELINE MODEL (Standard XGBoost)")
     
     baseline = XGBClassifier(
         n_estimators=100,
@@ -532,7 +572,7 @@ def main():
     
     baseline_metrics = compute_metrics(y_test, baseline_prob, threshold=0.5)
     
-    print("\nBaseline Metrics (threshold=0.5):")
+    logger.info("\nBaseline Metrics (threshold=0.5):")
     for key, val in baseline_metrics.items():
         if isinstance(val, float):
             print(f"{key}: {val:.4f}")
@@ -540,14 +580,14 @@ def main():
             print(f"{key}: {val}")
      
      
-    print("IMPROVED MODEL (Recall-Optimized Sentinel)")
+    logger.info("IMPROVED MODEL (Recall-Optimized Sentinel)")
     
     # Calculate class imbalance
     pos_count = y_train.sum()
     neg_count = len(y_train) - pos_count
     scale_pos_weight = neg_count / max(pos_count, 1)
     
-    print(f"Class imbalance ratio: {scale_pos_weight:.2f}")
+    logger.info(f"Class imbalance ratio: {scale_pos_weight:.2f}")
     
     sentinel = XGBClassifier(
         n_estimators=300,
@@ -573,26 +613,26 @@ def main():
         fallback=cfg.fallback_threshold
     )
     
-    print(f"Selected threshold: {sentinel_threshold:.4f} (target recall >= {cfg.min_recall_target})")
+    logger.info(f"Selected threshold: {sentinel_threshold:.4f} (target recall >= {cfg.min_recall_target})")
     
     sentinel_metrics = compute_metrics(y_test, sentinel_prob, threshold=sentinel_threshold)
     
-    print("Sentinel Metrics:")
+    logger.info("Sentinel Metrics:")
     for key, val in sentinel_metrics.items():
         if isinstance(val, float):
             print(f"{key}: {val:.4f}")
         else:
             print(f"{key}: {val}")       
     
-    print("THRESHOLD TRADEOFF ANALYSIS")
-    print("Exploring precision/recall tradeoffs at different thresholds:\n")
+    logger.info("THRESHOLD TRADEOFF ANALYSIS")
+    logger.info("Exploring precision/recall tradeoffs at different thresholds:\n")
     
     test_thresholds = [0.01, 0.05, 0.1, 0.3, 0.5, 0.7, 0.9]
-    print(f"{'Threshold':>10} {'Precision':>10} {'Recall':>10} {'F1':>10} {'FP':>6} {'FN':>6}")
+    logger.info(f"{'Threshold':>10} {'Precision':>10} {'Recall':>10} {'F1':>10} {'FP':>6} {'FN':>6}")
     
     for thr in test_thresholds:
         metrics = compute_metrics(y_test, sentinel_prob, threshold=thr)
-        print(
+        logger.info(
             f"{thr:>10.2f} "
             f"{metrics['precision']:>10.3f} "
             f"{metrics['recall']:>10.3f} "
@@ -601,26 +641,26 @@ def main():
             f"{metrics['false_negatives']:>6}"
         )
     
-    print("Tradeoff explanation:")
-    print("- Lower threshold → Higher recall (fewer missed risks) but more false alarms")
-    print("- Higher threshold → Higher precision (fewer false alarms) but more missed risks")
-    print(f"- For safety-critical applications, we prioritize recall >= {cfg.min_recall_target}")
-    print(f"- This means accepting {sentinel_metrics['false_positives']} false positives to catch {sentinel_metrics['true_positives']}/{sentinel_metrics['true_positives'] + sentinel_metrics['false_negatives']} risks")
+    logger.info("Tradeoff explanation:")
+    logger.info("- Lower threshold → Higher recall (fewer missed risks) but more false alarms")
+    logger.info("- Higher threshold → Higher precision (fewer false alarms) but more missed risks")
+    logger.info(f"- For safety-critical applications, we prioritize recall >= {cfg.min_recall_target}")
+    logger.info(f"- This means accepting {sentinel_metrics['false_positives']} false positives to catch {sentinel_metrics['true_positives']}/{sentinel_metrics['true_positives'] + sentinel_metrics['false_negatives']} risks")
 
     # FEATURE IMPORTANCE
     
-    print("TOP 15 MOST IMPORTANT FEATURES")
+    logger.info("TOP 15 MOST IMPORTANT FEATURES")
     
     importance_df = pd.DataFrame({
         'feature': feature_cols,
         'importance': sentinel.feature_importances_
     }).sort_values('importance', ascending=False).head(15)
     
-    print("\n", importance_df.to_string(index=False))
+    logger.info("\n%s", importance_df.to_string(index=False))
 
     # SAVE ARTIFACTS
     
-    print("SAVING MODEL ARTIFACTS")
+    logger.info("SAVING MODEL ARTIFACTS")
     
     # Save models
     baseline.save_model(os.path.join(args.model_out, "baseline.xgb"))
@@ -680,14 +720,14 @@ def main():
     with open(os.path.join(args.model_out, "metadata.json"), "w") as f:
         json.dump(metadata, f, indent=2)
     
-    print(f"Training complete!")
-    print(f"Artifacts saved to: {args.model_out}")
-    print(f"- baseline.xgb")
-    print(f"- sentinel.xgb (recommended)")
-    print(f"- metadata.json")
-    print(f"- feature_names.json")
+    logger.info(f"Training complete!")
+    logger.info(f"Artifacts saved to: {args.model_out}")
+    logger.info(f"- baseline.xgb")
+    logger.info(f"- sentinel.xgb (recommended)")
+    logger.info(f"- metadata.json")
+    logger.info(f"- feature_names.json")
     if label_encoders:
-        print(f"- label_encoders.json ({len(label_encoders)} categorical features)")
+        logger.info(f"- label_encoders.json ({len(label_encoders)} categorical features)")
 
 
 if __name__ == "__main__":

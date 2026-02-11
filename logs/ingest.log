@@ -1,0 +1,67 @@
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Starting telemetry ingestion pipeline
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Found 10 incidents
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_000
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 889 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 446 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 89 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_001
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 730 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 371 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 74 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_002
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 835 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 418 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 85 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_003
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 794 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 404 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 80 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_004
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 956 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 480 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 96 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_005
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 817 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 416 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 81 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_006
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 866 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 434 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 87 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_007
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 746 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 371 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 77 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_008
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 856 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 427 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 85 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading incident incident_009
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 791 records from pump.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 396 records from nozzle.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 80 records from hydrant.jsonl
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Writing outputs to ./data_curated
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_000: numeric_rows=5,857, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_000: categorical_rows=2,224
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_001: numeric_rows=4,828, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_001: categorical_rows=1,831
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_002: numeric_rows=5,514, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_002: categorical_rows=2,088
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_003: numeric_rows=5,253, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_003: categorical_rows=1,992
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_004: numeric_rows=6,299, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_004: categorical_rows=2,392
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_005: numeric_rows=5,399, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_005: categorical_rows=2,050
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_006: numeric_rows=5,692, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_006: categorical_rows=2,166
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_007: numeric_rows=4,925, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_007: categorical_rows=1,863
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_008: numeric_rows=5,639, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_008: categorical_rows=2,139
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_009: numeric_rows=5,230, dropped=0
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: incident_009: categorical_rows=1,978
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loading labels from ./data_raw\labels.csv
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Loaded 4,101 label rows
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: All parquet files written successfully
+[11-Feb-2026 05:37:42] [INFO] ingest_pipeline :: Telemetry ingestion completed successfully
