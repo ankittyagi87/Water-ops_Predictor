@@ -1,14 +1,136 @@
 # Firefighting Risk Prediction System
 
 ## Overview
-This system ingests telemetry from pumps, nozzles, and hydrants, combines it with risk labels, and trains XGBoost models to predict firefighting risks. It is organized into three phases:
+This system ingests telemetry from pumps, nozzles, and hydrants, combines it with risk labels, and trains XGBoost models to predict firefighting risks. 
+
+## Problem Statement
+Build a system that predicts a Water Supply Risk score: the probability
+that water delivery will become unstable within the next 2 minutes, based on the last N seconds of
+telemetry.
+
+Water instability manifests as:
+
+- Loss of suction or cavitation at the pump
+- Collapse of hydrant pressure under load
+- Sudden loss of nozzle performance despite the pump running normally
+- Rapid depletion of onboard tank while high flow demand continues
+
+### 1. Cavitation Risk
+   
+#### Relevant Telemetry
+   
+##### Pump
+- intake_pressure_psi
+- engine_rpm
+- throttle_pct
+- valve_state
+
+Intake pressure reflects the availability of water at the pump suction.
+
+When intake pressure drops too low:
+
+- Water begins to vaporize inside the pump
+- Vapor bubbles collapse violently → cavitation
+- Pump efficiency collapses and hardware damage occurs
+
+### 2. Hydrant Residual Pressure Crash
+   
+#### Relevant Telemetry
+
+##### Supply (Hydrant)
+- static_pressure_psi
+- residual_pressure_psi
+
+Static pressure = pressure with no flow
+
+Residual pressure = pressure while flowing
+
+A large drop from static → residual means the water distribution system cannot support the demanded flow.
+
+### 3. Sudden Nozzle Pressure / Flow Drop While Pump Discharge Is Steady
+
+#### Relevant Telemetry
+
+##### Pump
+- discharge_pressure_psi
+
+##### Nozzle
+- nozzle_pressure_psi
+- flow_gpm
+- nozzle_setting_gpm
+- pattern
+
+If pump discharge pressure remains stable but nozzle pressure or flow drops, the problem is downstream of the pump leading to
+
+- Hose kink or collapse
+- Valve partially closing
+- Nozzle pattern change increasing friction loss
+
+#### Risk Pattern
+
+- Discharge pressure steady
+- Nozzle pressure ↓ suddenly
+- Flow ↓ while demand setting unchanged
+
+### 4. Tank Emptying Soon While Flow Demand Remains High
+
+#### Relevant Telemetry
+
+##### Pump
+- tank_level_gal
+- discharge_pressure_psi
+
+##### Nozzle
+- flow_gpm
+  
+##### Supply
+- Intake pressure / residual pressure
+
+Rapid tank depletion indicates demand is exceeding sustainable supply.
+
+This typically occurs when:
+
+- Hydrant supply is inadequate or delayed
+- Multiple high-flow lines are opened
+- Pump operator relies too long on tank water
+
+The code is organized into three phases:
 
 1. **Ingestion Pipeline (ingest.py)**
 2. **Training Pipeline (train.py)**
 3. **Inference Service (serve.py)**
 
 ---
+## Instructions
 
+Run the following commands to set up and start the service:
+
+First, git clone the required repository
+``` git
+git clone https://github.com/ankittyagi87/Water-ops_Predictor
+```
+Then add data_raw/ data folder in the root directory
+
+``` bash
+uv sync
+uv run python -m waterops.ingest --input ./data_raw --output ./data_curated
+uv run python -m waterops.train --data ./data_curated --model-out ./artifacts
+python -m waterops.serve
+```
+
+### Powershell
+``` ps
+curl.exe -X POST "http://localhost:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d @artifacts/X_test_last.json
+```
+### Linux
+```bash
+curl -X POST "http://localhost:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d @artifacts/X_test_last.json
+```
+---
 ## Data Sources
 - **Pump Sensors** (~2 Hz)
 - **Nozzle Sensors** (~1 Hz)
@@ -118,32 +240,19 @@ POST `/predict`
 
 Added a representative file X_test_last.json in artifacts folder when training code runs.
 
-## Instructions
+---
 
-Run the following commands to set up and start the service:
+## Future Steps
+We can add more physics related features to help identify the model about risk.
+### Feature Engineering
+| Feature name          | Formulae          | Physical Meaning  |
+|-----------------------|-------------------|-------------------|
+| hydrant_pressure_drop | static − residual |Network head loss  |
+| intake_pressure_volatility | std(intake_pump_pressure) |Unstable suction / cavitation|
+| pressure_loss_between_pump_nozzle | discharge_pressure_mean − nozzle_pressure_mean |Identifies hose kinks, valve restriction, or downstream collapse|
+|tank_depletion_rate | (tank_level_first − tank_level_last) / window_seconds |Shows how quickly the water tank is running out|
+|cavitation_risk_index | (engine_rpm_mean × throttle_pct_mean) / max(intake_pressure_mean, small value) | Detects pump working harder while suction collapses|
 
-First, git clone the required repository
-``` git
-git clone https://github.com/ankittyagi87/Water-ops_Predictor
-```
-Then add data_raw/ data folder in the root directory
 
-``` bash
-uv sync
-uv run python -m waterops.ingest --input ./data_raw --output ./data_curated
-uv run python -m waterops.train --data ./data_curated --model-out ./artifacts
-python -m waterops.serve
-```
 
-### Powershell
-``` ps
-curl.exe -X POST "http://localhost:8000/predict" \
-     -H "Content-Type: application/json" \
-     -d @artifacts/X_test_last.json
-```
-### Linux
-```bash
-curl -X POST "http://localhost:8000/predict" \
-     -H "Content-Type: application/json" \
-     -d @artifacts/X_test_last.json
-```
+
