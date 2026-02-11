@@ -250,8 +250,9 @@ We can add more physics related features to help identify the model about risk.
 | hydrant_pressure_drop | static − residual |Network head loss  |
 | intake_pressure_volatility | std(intake_pump_pressure) |Unstable suction / cavitation|
 | pressure_loss_between_pump_nozzle | discharge_pressure_mean − nozzle_pressure_mean |Identifies hose kinks, valve restriction, or downstream collapse|
-|tank_depletion_rate | (tank_level_first − tank_level_last) / window_seconds |Shows how quickly the water tank is running out|
 |cavitation_risk_index | (engine_rpm_mean × throttle_pct_mean) / max(intake_pressure_mean, small value) | Detects pump working harder while suction collapses|
+
+This is only a representative set.
 
 
 
