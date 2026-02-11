@@ -233,7 +233,7 @@ Data is stored in `data_raw/`:
 
 ---
 
-## Phase C: Inference (`serve.py` / `predict.py`)
+## Phase C: Inference (`serve.py`)
 
 ### Input
 POST `/predict`
