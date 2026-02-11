@@ -367,6 +367,7 @@ class TrainingTableBuilder:
             how="inner"
         )
         
+        
         if self.cfg.label_col not in dataset.columns:
             raise ValueError(f"Label column '{self.cfg.label_col}' not found. Available: {dataset.columns.tolist()}")
         
@@ -575,9 +576,9 @@ def main():
     logger.info("\nBaseline Metrics (threshold=0.5):")
     for key, val in baseline_metrics.items():
         if isinstance(val, float):
-            print(f"{key}: {val:.4f}")
+            logger.info(f"{key}: {val:.4f}")
         else:
-            print(f"{key}: {val}")
+            logger.info(f"{key}: {val}")
      
      
     logger.info("IMPROVED MODEL (Recall-Optimized Sentinel)")
@@ -620,9 +621,9 @@ def main():
     logger.info("Sentinel Metrics:")
     for key, val in sentinel_metrics.items():
         if isinstance(val, float):
-            print(f"{key}: {val:.4f}")
+            logger.info(f"{key}: {val:.4f}")
         else:
-            print(f"{key}: {val}")       
+            logger.info(f"{key}: {val}")       
     
     logger.info("THRESHOLD TRADEOFF ANALYSIS")
     logger.info("Exploring precision/recall tradeoffs at different thresholds:\n")
