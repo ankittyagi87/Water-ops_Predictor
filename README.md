@@ -139,8 +139,8 @@ curl -X POST "http://localhost:8000/predict" \
 
 Data is stored in `data_raw/`:
 - `incident_000/pump.jsonl` → `{"ts_ms": 1000, "pump_id": "pump_1", "rpm": 1850}`
-- `incident_000/nozzle.jsonl` → `{"ts_ms": 1000, "nozzle_id": "n1", "flow_gpm": 250}`
-- `incident_000/hydrant.jsonl` → `{"ts_ms": 1000, "hydrant_id": "h1", "psi": 40.5}`
+- `incident_000/nozzle.jsonl` → `{"ts_ms": 1000, "nozzle_id": "nozzle_5", "flow_gpm": 250}`
+- `incident_000/hydrant.jsonl` → `{"ts_ms": 1000, "hydrant_id": "hydrant_28", "psi": 40.5}`
 - `labels.csv` → `incident_id, ts_ms, risk_in_next_120s`
 
 **Total:** 10 incidents × 3 streams = 30 JSONL files + 1 CSV  
